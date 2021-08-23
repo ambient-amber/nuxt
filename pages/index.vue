@@ -16,44 +16,54 @@
 export default {
   data() {
     return {
+      ws_connection: null,
       messages_history: [
         {
-          text: 'Привет',
+          text: '1',
           is_mine: true
         },
         {
-          text: 'Очень оригинально! Не пиши мне!',
+          text: '2',
           is_mine: false
         },
         {
-          text: 'Да ладно тебе, крошка!',
+          text: '3',
           is_mine: true
         },
         {
-          text: 'Игнор!',
+          text: '4',
           is_mine: false
         }
       ],
       message: ''
     }
   },
+  async mounted() {
+    await this.connectToServer();
+  },
   methods: {
     async sendMessage() {
-      let socket = new WebSocket("ws://192.168.0.14:3000/chat/");
+      this.ws_connection.send(this.message);
 
-      socket.onopen = function() {
-        console.log("Соединение установлено.");
-
-        if (this.message) {
-          socket.send(this.message);
-
-          this.messages_history.push({
-            text: this.message,
-            is_mine: true
-          });
-          this.message = '';
-        }
+      this.ws_connection.onmessage = (event) => {
+        this.messages_history.push({
+          text: this.message,
+          is_mine: true
+        });
       };
+    },
+    async connectToServer() {
+      const ws = new WebSocket('ws://localhost:8080/chat');
+
+      return new Promise((resolve, reject) => {
+        const timer = setInterval(() => {
+          if (ws.readyState === 1) {
+            clearInterval(timer);
+            this.ws_connection = ws;
+            resolve();
+          }
+        }, 10);
+      });
     }
   }
 }

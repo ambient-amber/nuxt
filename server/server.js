@@ -1,31 +1,34 @@
-global.express = require('express');
-global.websocket = require('ws');
-global.router = express.Router();
+const ws = require('ws');
+const wss = new ws.Server({ port: 8080 });
 
-const http = require('http');
+// подключенные клиенты
+let clients = {};
 
-const hostname = '192.168.0.14';
-const port = 3000;
+wss.on('connection', function(ws) {
+  let id = Math.random();
 
-const app = express();
+  clients[id] = ws;
 
-const server = http.createServer(app);
-const ws_server = new websocket.Server({ server });
+  console.log("новое соединение " + id);
 
-ws_server.on('connection', (websocket) => {
-    //connection is up, let's add a simple simple event
-    websocket.on('message', (message) => {
-        //log the received message and send it back to the client
-        console.log('received: %s', message);
-        websocket.send(`Hello, you sent -> ${message}`);
-    });
+  ws.on('message', function(message) {
+    console.log('получено сообщение ' + message);
 
-    //send immediatly a feedback to the incoming connection
-    websocket.send('Hi there, I am a WebSocket server');
-});
+    for (let key in clients) {
+      clients[key].send(message);
+    }
+  });
 
-server.listen(port, hostname, () => {
-    console.log(`Server running at http://${hostname}:${port}/`);
-});
+  ws.on('close', function() {
+    console.log('соединение закрыто ' + id);
+    delete clients[id];
+  });
+})
 
-app.use('/api', require('./routes/chat'));
+/*wss.on('connection', function connection(ws) {
+  ws.on('message', function incoming(message) {
+    console.log('received: %s', message);
+  });
+
+  ws.send('connection');
+});*/
