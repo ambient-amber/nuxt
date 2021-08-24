@@ -13,8 +13,6 @@
 </template>
 
 <script>
-  import axios from "axios";
-
 export default {
   data() {
     return {
@@ -49,7 +47,7 @@ export default {
       this.ws_connection.send(this.message);
 
       this.ws_connection.onmessage = (event) => {
-        console.log('event', event);
+        console.log('event', event.data);
 
         this.messages_history.push({
           text: this.message,
@@ -71,9 +69,9 @@ export default {
       });
     },
     async getUser() {
-      await axios.get('/api/users/get_user/1').then((resp) => {
-        console.log('get_user', resp.data);
-      });
+      let user = await this.$axios.get('/api/users/get_user/1');
+
+      console.log('user', user);
     }
   }
 }
