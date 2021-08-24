@@ -1,5 +1,14 @@
+const express = require('express');
+const http = require('http');
+const app = express();
 const ws = require('ws');
-const wss = new ws.Server({ port: 8080 });
+
+// const hostname = '192.168.0.14';
+const hostname = '127.0.0.1';
+const port = 3030;
+
+const server = http.createServer(app);
+const wss = new ws.Server({ server });
 
 // подключенные клиенты
 let clients = {};
@@ -23,12 +32,10 @@ wss.on('connection', function(ws) {
     console.log('соединение закрыто ' + id);
     delete clients[id];
   });
-})
+});
 
-/*wss.on('connection', function connection(ws) {
-  ws.on('message', function incoming(message) {
-    console.log('received: %s', message);
-  });
+server.listen(port, hostname, () => {
+  console.log(`Server running at http://${hostname}:${port}/`);
+});
 
-  ws.send('connection');
-});*/
+app.use('/api', require('./routes/users'));

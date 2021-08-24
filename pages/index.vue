@@ -13,6 +13,8 @@
 </template>
 
 <script>
+  import axios from "axios";
+
 export default {
   data() {
     return {
@@ -40,12 +42,15 @@ export default {
   },
   async mounted() {
     await this.connectToServer();
+    await this.getUser();
   },
   methods: {
     async sendMessage() {
       this.ws_connection.send(this.message);
 
       this.ws_connection.onmessage = (event) => {
+        console.log('event', event);
+
         this.messages_history.push({
           text: this.message,
           is_mine: true
@@ -53,7 +58,7 @@ export default {
       };
     },
     async connectToServer() {
-      const ws = new WebSocket('ws://localhost:8080/chat');
+      const ws = new WebSocket('ws://localhost:3030/');
 
       return new Promise((resolve, reject) => {
         const timer = setInterval(() => {
@@ -63,6 +68,11 @@ export default {
             resolve();
           }
         }, 10);
+      });
+    },
+    async getUser() {
+      await axios.get('/api/users/get_user/1').then((resp) => {
+        console.log('get_user', resp.data);
       });
     }
   }
