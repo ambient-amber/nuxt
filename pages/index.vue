@@ -1,6 +1,5 @@
 <template>
   <div>
-    <!--<Tutorial/>-->
     <div class="dialog">
       <div class="message" :class="{'mine': message.is_mine}" v-for="(message, index) in messages_history" :key="index">
         <div class="message_inner">{{ message.text }}</div>
