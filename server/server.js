@@ -1,3 +1,7 @@
+global.project_settings = require('./settings');
+global.db = require('./db');
+global.api = require('./api');
+
 const express = require('express');
 const http = require('http');
 const app = express();
@@ -38,4 +42,5 @@ server.listen(port, hostname, () => {
   console.log(`Server running at http://${hostname}:${port}/`);
 });
 
+app.use(express.json());
 app.use('/api', require('./routes/users'));
