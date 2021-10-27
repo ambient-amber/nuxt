@@ -2,6 +2,8 @@ global.project_settings = require('./settings');
 global.db = require('./db');
 global.api = require('./api');
 
+const ws_router = require('./ws_scripts/router');
+
 const express = require('express');
 const http = require('http');
 const app = express();
@@ -12,6 +14,15 @@ const hostname = '127.0.0.1';
 const port = 3030;
 
 const server = http.createServer(app);
+
+server.listen(port, hostname, () => {
+  console.log(`Server running at http://${hostname}:${port}/`);
+});
+
+app.use(express.json());
+app.use('/api', require('./routes/users'));
+
+/* --- WebSockets --- */
 const wss = new ws.Server({ server });
 
 // подключенные клиенты
@@ -24,12 +35,8 @@ wss.on('connection', function(ws) {
 
   console.log("новое соединение " + id);
 
-  ws.on('message', function(message) {
-    console.log('получено сообщение ' + message);
-
-    for (let key in clients) {
-      clients[key].send(message);
-    }
+  ws.on('message', async (data) => {
+    await ws_router.route(ws, clients, data);
   });
 
   ws.on('close', function() {
@@ -37,10 +44,4 @@ wss.on('connection', function(ws) {
     delete clients[id];
   });
 });
-
-server.listen(port, hostname, () => {
-  console.log(`Server running at http://${hostname}:${port}/`);
-});
-
-app.use(express.json());
-app.use('/api', require('./routes/users'));
+/* ----------------- */

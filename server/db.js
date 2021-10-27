@@ -6,4 +6,4 @@ const pgp = require('pg-promise')();
 const connectionString = db_settings.provider + '://' + auth_part + '@' + address_part + '/' + db_settings.name;
 const db = pgp(connectionString);
 
-module.exports = db
+module.exports = db;
