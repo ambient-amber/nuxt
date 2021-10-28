@@ -11,7 +11,18 @@ exports.route = async (ws, clients, data) => {
 
             if (result) {
                 for (let key in clients) {
+                    // ToDo определиться как отправлять данные только нужным пользователям, а не всем подряд
+
+                    // Ответ запроса на отправку сообщения от пользователя
                     clients[key].send(JSON.stringify(data));
+
+                    // Уведомление пользователя о новом сообщении, если он онлайн
+                    clients[key].send(JSON.stringify({
+                        from_user: {},
+                        text: {},
+                    }));
+
+
                 }
             }
         }

@@ -52,6 +52,8 @@
         },
         async mounted() {
             await this.getUserCompanions();
+
+            this.receiveNewMessage();
         },
         methods: {
             sendMessage() {
@@ -101,6 +103,10 @@
                     alert(response.data.message);
                 }
             },
+            /**
+             * Получение части переписки с выбранным пользователем.
+             * Вызывается при выборе собеседника, если сообщения еще не загружены, и при скролле переписки.
+             * */
             async getUserCompanionMessages(companion) {
                 let response = await this.$axios.post('/api/users/get_companion_messages', {
                     user_id: this.user.id,
@@ -115,6 +121,25 @@
                 } else {
                     alert(response.data.message);
                 }
+            },
+            /**
+             * Подписка на получение от сокета в фоне новых сообщений от пользователей.
+             * */
+            receiveNewMessage() {
+                this.$websocket.subscribe(
+                    {
+                        request_type: 'receive_new_message',
+                        user_id: this.user.id
+                    },
+                    (data) => {
+                        console.log('receiveNewMessage callback data', data);
+
+                        this.companions[data.companion_id].messages.push({
+                            message: data.text,
+                            is_mine: false
+                        });
+                    }
+                )
             }
         }
     }

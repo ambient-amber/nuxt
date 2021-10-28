@@ -8,6 +8,7 @@
 
       <TheHeader />
       <Nuxt />
+      <UserChat />
       <TheFooter />
     </div>
     <div v-else>
@@ -50,9 +51,6 @@
         }
       },
     },*/
-    /*async mounted() {
-      await this.connectToServer();
-    },*/
     methods: {
       async logIn() {
         this.auth_error = '';
@@ -74,25 +72,7 @@
       async logOut() {
         this.user = {};
         this.is_auth = false;
-      },
-      /*async connectToServer() {
-        const ws = new WebSocket('ws://localhost:3030/');
-
-        return new Promise((resolve, reject) => {
-          const timer = setInterval(() => {
-            if (ws.readyState === 1) {
-              clearInterval(timer);
-              this.$store.commit('ws/setConnection', ws);
-              resolve();
-            }
-          }, 10);
-        });
-      },*/
-      /*async getUser() {
-        let user = await this.$axios.get('/api/users/get_user/1');
-
-        console.log('user', user);
-      },*/
+      }
     }
   }
 </script>
