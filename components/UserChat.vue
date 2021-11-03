@@ -45,15 +45,12 @@
         computed: {
             user() {
                 return this.$store.state.users.user;
-            },
-            /*ws_connection() {
-                return this.$store.state.ws.ws;
-            }*/
+            }
         },
         async mounted() {
             await this.getUserCompanions();
 
-            this.receiveNewMessage();
+            this.subscribeOnNewMessages();
         },
         methods: {
             sendMessage() {
@@ -64,15 +61,17 @@
                         user_id_to: this.selected_companion_id,
                         user_id_from: this.user.id
                     },
-                    (data) => {
-                        console.log('send_message callback data', data);
+                    (response) => {
+                        if (response.is_success) {
+                            this.companions[this.selected_companion_id].messages.push({
+                                message: this.new_message,
+                                is_mine: true
+                            });
 
-                        this.companions[this.selected_companion_id].messages.push({
-                            message: this.new_message,
-                            is_mine: true
-                        });
-
-                        this.new_message = '';
+                            this.new_message = '';
+                        } else {
+                            alert(response.message)
+                        }
                     }
                 );
             },
@@ -89,8 +88,6 @@
                 if (!companion.messages.length) {
                     await this.getUserCompanionMessages(companion);
                 }
-
-                console.log('companion', companion);
             },
             async getUserCompanions() {
                 let response = await this.$axios.post('/api/users/get_companions', {
@@ -125,17 +122,15 @@
             /**
              * Подписка на получение от сокета в фоне новых сообщений от пользователей.
              * */
-            receiveNewMessage() {
+            subscribeOnNewMessages() {
                 this.$websocket.subscribe(
                     {
                         request_type: 'receive_new_message',
                         user_id: this.user.id
                     },
-                    (data) => {
-                        console.log('receiveNewMessage callback data', data);
-
-                        this.companions[data.companion_id].messages.push({
-                            message: data.text,
+                    (response) => {
+                        this.companions[response.data.user_id_from].messages.push({
+                            message: response.data.text,
                             is_mine: false
                         });
                     }

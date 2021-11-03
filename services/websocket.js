@@ -23,8 +23,10 @@ export class WebsocketService {
         this.websocket.onmessage = (event) => {
             let response_data = JSON.parse(event.data);
 
-            if (this.observers[response_data.request_type] !== undefined) {
-                this.observers[response_data.request_type](response_data);
+            console.log('websocket.onmessage data', response_data);
+
+            if (this.observers[response_data.data.request_type] !== undefined) {
+                this.observers[response_data.data.request_type](response_data);
             }
         }
     }

@@ -1,6 +1,6 @@
 <template>
   <div class="default_layout">
-    <div v-if="is_auth">
+    <div v-if="user.id">
       <p>Вы авторизованы как <b>{{ user.name }}</b></p>
       <p>
         <a href="#" @click="logOut">Выход</a>
@@ -37,25 +37,39 @@
   export default {
     data() {
       return {
-        is_auth: false,
         login: '',
         password: '',
-        user: {},
-        auth_error: ''
+        auth_error: '',
+        user: {}
       }
     },
     /*computed: {
-      is_auth() {
-        if (process.browser){
-          return (localStorage.getItem('user_token'));
-        }
+      user() {
+          return this.$store.state.users.user;
       },
     },*/
     methods: {
       async logIn() {
         this.auth_error = '';
 
-        let auth = await this.$axios.post('/api/users/login', {
+        this.$websocket.send(
+          {
+            request_type: 'login',
+            login: this.login,
+            password: this.password
+          },
+          (response) => {
+            if (response.is_success) {
+              this.user = response.data.user;
+
+              this.$store.commit('users/setUser', this.user);
+            } else {
+              this.auth_error = response.data.message;
+            }
+          }
+        );
+
+        /*let auth = await this.$axios.post('/api/users/login', {
           login: this.login,
           password: this.password
         });
@@ -67,7 +81,7 @@
           this.$store.commit('users/setUser', this.user);
         } else {
           this.auth_error = auth.data.message;
-        }
+        }*/
       },
       async logOut() {
         this.user = {};

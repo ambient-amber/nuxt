@@ -1,4 +1,4 @@
-exports.sendMessage = async (data) => {
+exports.sendMessage = async (ws, data) => {
     let result = {};
 
     try {
@@ -22,13 +22,33 @@ exports.sendMessage = async (data) => {
             data.text
         ]);
 
-        result = global.api.setResult(true, '', data);
+        // Отправка сообщения пользователю
+        // ToDo реализовать случай, когда пользователь еще не переписывался с отправителем сообщения.
+        for (let connection_id in global.ws_clients) {
+            let ws_client = global.ws_clients[connection_id];
+
+            if (ws_client.user && ws_client.user.id === data.user_id_to) {
+                ws_client.ws.send(JSON.stringify({
+                    data: {
+                        request_type: 'receive_new_message',
+                        user_id_from: data.user_id_from,
+                        text: data.text
+                    }
+                }));
+            }
+        }
+
+        result = global.api.setResult(
+            true, '', { request_type: 'send_message' }
+        );
     } catch(error) {
         result = global.api.setResult(
             false,
-            error.message
+            error.message,
+            { request_type: 'send_message' }
         );
     }
 
-    return result;
+    // Отправка ответа на запрос
+    ws.send(JSON.stringify(result));
 };

@@ -25,23 +25,25 @@ app.use('/api', require('./routes/users'));
 /* --- WebSockets --- */
 const wss = new ws.Server({ server });
 
-// подключенные клиенты
-let clients = {};
+// ToDo подумать как лучше хранить пользователей с их соединениями.
+global.ws_clients = {};
 
 wss.on('connection', function(ws) {
-  let id = Math.random();
+  let ws_connection_id = Math.random();
+  console.log("новое соединение " + ws_connection_id);
 
-  clients[id] = ws;
-
-  console.log("новое соединение " + id);
+  global.ws_clients[ws_connection_id] = {
+    ws,
+    user: null
+  };
 
   ws.on('message', async (data) => {
-    await ws_router.route(ws, clients, data);
+    await ws_router.route(ws, data, ws_connection_id);
   });
 
   ws.on('close', function() {
-    console.log('соединение закрыто ' + id);
-    delete clients[id];
+    console.log('соединение закрыто ' + ws_connection_id);
+    delete global.ws_clients[ws_connection_id];
   });
 });
 /* ----------------- */
